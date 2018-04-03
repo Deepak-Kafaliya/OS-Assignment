@@ -1,0 +1,125 @@
+#include<stdio.h>
+#include<string.h>
+#include<pthread.h>
+#include<semaphore.h>
+#include<time.h>
+
+struct tm *ti;
+time_t t;
+pthread_t T1,T2,T3,T4,T5;
+pthread_mutex_t M1,M2;
+int choice,n,count=0,students=0,teachers=0,staff=0;
+
+void *Students()
+{
+	pthread_mutex_lock(&M1);
+	count++;
+	students++;
+	printf("\nStudent no %d is playing\n",students);
+	pthread_mutex_unlock(&M1);
+	sleep(1);
+    if(ti->tm_hour>6&&ti->tm_hour<22)
+	{
+		pthread_mutex_lock(&M2);
+		teachers--;
+		count--;
+		printf("\n Logged Out \n");
+	    pthread_mutex_unlock(&M2);
+	}
+	pthread_exit(NULL);
+}
+
+void *Teachers()
+{   
+	pthread_mutex_lock(&M1);
+	teachers++;
+	printf("\nTeacher no %d is playing \n",teachers);
+	count++;
+
+	pthread_mutex_unlock(&M1);
+	sleep(1);
+    if(ti->tm_hour>8&&ti->tm_hour<17)
+	{
+		pthread_mutex_lock(&M1);
+		teachers--;
+		count--;
+		printf("\n Logged Out \n");
+	pthread_mutex_unlock(&M1);
+	}
+	pthread_exit(NULL);
+}
+
+
+void *Staff()
+{
+	pthread_mutex_lock(&M2);
+	staff++;
+	count++;
+	printf("\nStaff no %d is playing \n",staff);
+	pthread_mutex_unlock(&M2);
+		pthread_exit(NULL);
+}
+
+void *Login()
+{
+	A:
+printf("\n1. Staff");
+printf("\n2. Students");
+printf("\n3. Teachers");
+printf("\n4. Exit");
+printf("\nEnter Your choice... ");
+scanf("%d",&choice);
+
+
+switch(choice){
+	case 1:	
+		printf("\n Staff Logged in \n");
+		pthread_create(&T3,NULL,Staff,NULL);
+		pthread_join(T3,NULL);
+		
+		break;
+	case 2:
+	   ti=localtime(&t);
+	   printf("\n %s \n",asctime(ti));
+	if(ti->tm_hour>=22||ti->tm_hour<=6)
+	    {
+		printf("\nStudent  Logged in \n");
+		pthread_create(&T4,NULL,Students,NULL);
+		pthread_join(T4,NULL);
+		}
+		else 
+		{
+			printf("\n Access denied \n");
+		}		
+		break;
+	case 3:
+	    ti=localtime(&t);
+	    printf("\n %s \n",asctime(ti));
+	    if(ti->tm_hour>=17||ti->tm_hour<=8)
+	    {
+		printf("\n Teacher Logged in \n");
+		pthread_create(&T5,NULL,Teachers,NULL);
+		pthread_join(T5,NULL);}
+		else 
+		{
+			printf("\n Access denied \n");
+		}
+		break;
+	case 4:
+	       pthread_exit(NULL);
+	default: printf("\n Wrong Input \n");
+	         goto A;
+	         }
+	pthread_exit(NULL);}
+void main()
+{time(&t);
+	int i;
+	do
+	{
+		pthread_create(&T1,NULL,Login,NULL);
+		pthread_join(T1,NULL);
+		printf("Number of users %d \n",count);
+		printf("Do you want to continue?(0 to exit) ");
+		scanf("%d",&i);
+	}while(i!=0);
+	}
